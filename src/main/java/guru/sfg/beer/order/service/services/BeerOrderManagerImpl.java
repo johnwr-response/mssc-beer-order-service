@@ -151,7 +151,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
         AtomicInteger loopCount = new AtomicInteger(0);
 
         while (!found.get()) {
-            if (loopCount.incrementAndGet() > 10) {
+            if (loopCount.incrementAndGet() > 20) {
                 found.set(true);
                 log.debug("Loop Retries Exceeded");
             }
@@ -168,9 +168,16 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
             });
 
             if (!found.get()) {
+                log.debug("Try via String id");
+                beerOrderRepository.findOrderUsingStringId(beerOrderId.toString()).ifPresentOrElse(beerOrder -> {
+                    found.set(true);
+                },() -> log.debug("Not found via String id"));
+            }
+
+            if (!found.get()) {
                 try {
                     log.debug("Sleeping for retry");
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (Exception e) {
                     // do nothing
                 }
